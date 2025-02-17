@@ -11,6 +11,7 @@ import {
 import { useCamera } from "@/hooks/use-camera";
 import { GeminiService } from "@/services/gemini";
 import { NutritionData } from "@/types/nutrition";
+import { SupabaseService } from "@/services/superbase";
 
 export default function Index() {
   const { image, setImage, takePicture } = useCamera();
@@ -18,6 +19,20 @@ export default function Index() {
     null
   );
   const geminiService = new GeminiService();
+  const supabaseService = new SupabaseService();
+
+  const saveNutritionData = async (data: NutritionData | null) => {
+    try {
+      await supabaseService.storeNutritionalData(data as NutritionData);
+      Alert.alert("Success", "Nutrition data saved successfully!");
+    } catch (error) {
+      console.error("Supabase Error:", error);
+      Alert.alert(
+        "Error",
+        "Failed to save nutrition data. Check console for details."
+      );
+    }
+  };
 
   const handleTakePicture = async () => {
     const result = await takePicture();
@@ -37,6 +52,7 @@ export default function Index() {
       }
     }
   };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Nutritional Scanner</Text>
@@ -57,6 +73,12 @@ export default function Index() {
           <View style={styles.imageActions}>
             <TouchableOpacity style={styles.button} onPress={handleTakePicture}>
               <Text style={styles.buttonText}>Retake</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => saveNutritionData(nutritionData)}
+            >
+              <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
